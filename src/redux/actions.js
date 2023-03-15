@@ -13,7 +13,7 @@ export const ORDER_RECIPES_BY_HEALTHSCORE = "ORDER_RECIPES_BY_HEALTHSCORE";
 
 export const getAllRecipes = () => {
     return dispatch => {
-        return fetch(`http://localhost:3001/recipes`)
+        return fetch(`https://food-back-deploy.onrender.com/recipes`)
                 .then(response => response.json())
                 .then(json => dispatch({type: GET_ALL_RECIPES, payload: json}))
       };
@@ -21,7 +21,7 @@ export const getAllRecipes = () => {
 
 export const getAllDiets = () => {
     return dispatch => {
-        return fetch(`http://localhost:3001/diets`)
+        return fetch(`https://food-back-deploy.onrender.com/diets`)
                 .then(response => response.json())
                 .then(json => dispatch({type: GET_ALL_DIETS, payload: json}))
       };
@@ -29,7 +29,7 @@ export const getAllDiets = () => {
 
 export const getFilteredRecipes = (name) => {
     return dispatch => {
-        return fetch(`http://localhost:3001/recipes?name=${name}`)
+        return fetch(`https://food-back-deploy.onrender.com/recipes?name=${name}`)
                 .then(response => response.json())
                 .then(json => dispatch({
                     type: GET_FILTERED_RECIPES, payload: json}))
@@ -57,7 +57,7 @@ export const orderRecipesByHealthscore = (typeOfSort) => {
 export const getRecipeDetails = (id) => { 
     return dispatch => {
         
-        return fetch(`http://localhost:3001/recipes/${id}`)
+        return fetch(`https://food-back-deploy.onrender.com/recipes/${id}`)
                 .then(response => response.json())
                 .then(json => dispatch({type: GET_RECIPE_DETAILS, payload: json}))
 
@@ -70,7 +70,7 @@ export const createRecipe = (args) => {
         
         return axios({
             method: "post",
-            url: "http://localhost:3001/recipes",
+            url: "https://food-back-deploy.onrender.com/recipes",
             data: args
           })
             .then(json => dispatch({type: CREATE_RECIPE, payload: json}))
