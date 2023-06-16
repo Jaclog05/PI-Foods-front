@@ -11,7 +11,7 @@ function GameCard({name, image, diet, healthScore}) {
             <div>{healthScore}</div>
             <h4 style={{margin: 4}}>{name}</h4>
         </div>
-        <img className={styles.images} src={image ? image : defaultNewRecipe} alt={name} width="210" height="140"/>
+        <img className={styles.images} loading='lazy' src={image ? image : defaultNewRecipe} alt={name} width="210" height="140"/>
         <div className={styles.genresDiv}>
             {diet && diet.map((m, i) => <span key={i}>{`• ${typeof m === 'string' ? m : m.name}`}</span>)}
         </div>
