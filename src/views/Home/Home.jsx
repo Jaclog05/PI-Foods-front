@@ -2,19 +2,20 @@ import React from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import * as actions from '../../redux/actions'
-import RecipeCard from '../../components/RecipeCard/RecipeCard.jsx'
 import styles from './Home.module.css'
 import loading from '../../images/loading.gif'
-import dietsObj from '../../apiObjects/dietsObj.json'
-import alphabetObj from '../../apiObjects/alphabetObj.json'
-import healthScoreObj from '../../apiObjects/healthScoreObj.json'
+import RecipeCard from '../../components/RecipeCard/RecipeCard.jsx'
+import Filter from '../../components/Filters/Filter.jsx'
+import Pagination from '../../components/Pagination/Pagination.jsx'
+import filtersInfo from '../../apiObjects/filtersInfo.json'
+import objOptions from '../../apiObjects/objOptions.json'
 
 export default function Home() {
     
     const dispatch = useDispatch()
 
     let recipesArray = useSelector(state => state.recipes)
-    let recipesArrayFiltered = useSelector(state => state.filteredRecipes)
+    /* let recipesArrayFiltered = useSelector(state => state.filteredRecipes) */
 
     let [homeInfo, setHomeInfo] = React.useState({
         pageIndex: 0,
@@ -24,22 +25,6 @@ export default function Home() {
         sortHealthScore: ""
     })
 
-    const filterCreator = (html, labelM, value, name, disabled, objOptions) => {
-            return (
-                <label htmlFor={html}>{labelM}:
-                                    <select 
-                                        value = {value} 
-                                        className = {value.length ? styles.optionSelected : styles.noSelectedOption} 
-                                        name = {name} 
-                                        id = {html} 
-                                        onChange = {handleFilters}
-                                    >
-                                            <option disabled={disabled} value="">--Please choose an option--</option>
-                                            {Object.keys(objOptions).map((key, i) => <option key={i} name={name} value={key}>{key}</option>)}
-                                    </select>
-                </label>
-            )
-    }
 
     const handleFilters = (e) => {
         let {name, value} = e.target
@@ -49,7 +34,6 @@ export default function Home() {
                     ...prev,
                     [name]: value
                 }))
-    
                 dispatch(actions.getRecipesByDiet(value)); break;
 
             case 'sortAlphabet' : 
@@ -58,16 +42,16 @@ export default function Home() {
                     [name]: value,
                     sortHealthScore: ""
                 }))
-    
                 dispatch(actions.orderRecipesAlpabetically(value)); break;
+
             case 'sortHealthScore' : 
                 setHomeInfo((prev) => ({
                     ...prev,
                     [name]: value,
                     sortAlphabet: ""
                 }))
-    
                 dispatch(actions.orderRecipesByHealthscore(value)); break;
+
             default :
                 dispatch(actions.getFilteredRecipes(homeInfo.nameToFilter))
         }
@@ -81,7 +65,10 @@ export default function Home() {
                 [name]: name === 'nameToFilter' ? value : parseInt(value)
             }
         })
-        recipesArray = recipesArrayFiltered
+        /* recipesArray = recipesArrayFiltered */
+        if(!value.length){
+            dispatch(actions.getAllRecipes())
+        }
         
     }
 
@@ -90,38 +77,65 @@ export default function Home() {
         dispatch(actions.getFilteredRecipes(homeInfo.nameToFilter))
     }
 
+    const handleReset = () => {
+        setHomeInfo(prevState => ({
+            ...prevState,
+            nameToFilter: "",
+            diets: "",
+            sortAlphabet: "",
+            sortHealthScore: ""
+        }))
+    }
+
+
+    //intenta hacer que se carguen las recetas y las dietas una sola vez. No cada vez que se 
+    //recargue la pagina. Mira lo del localStorage o algo.
+
+    //Ojo que las dietas no cargan en el Home. Debe ser porque borraste eso del useEffect
+    //dispatch(actions.getAllDiets())
+    
     React.useEffect(() => {
         dispatch(actions.getAllRecipes())
-        dispatch(actions.getAllDiets())
-    }, [dispatch])
+    }, [])
+
+
 
     return(
         <div className={styles.body}>
             <form onSubmit={handleSubmit} className={styles.searchWrapper}>
 
                         <div className={styles.searchDiv}>
-                            <input className={styles.searchInput} placeholder="Search for recipes..." type="text" name="nameToFilter" value={homeInfo.nameToFilter} onChange={handleChange}/>
+                            <input 
+                                className={styles.searchInput} 
+                                placeholder="Search for recipes..." 
+                                type="text" 
+                                name="nameToFilter" 
+                                value={homeInfo.nameToFilter} 
+                                onChange={handleChange}
+                            />
                             <input className={styles.searchButton} type="submit" value="Search"/>
                         </div>
+
                         <div className ={styles.options}>
-                            {filterCreator("diet-select", "Order by diet", homeInfo.diets, "diets", false, dietsObj)}
-                            {filterCreator("alphabet-select", "Sort alphabetically", homeInfo.sortAlphabet, "sortAlphabet", true, alphabetObj)}
-                            {filterCreator("healtScore-select", "Order by healthScore", homeInfo.sortHealthScore, "sortHealthScore", true, healthScoreObj)}
+                            {filtersInfo.map((filter, i) => {
+                                return(
+                                    <Filter
+                                        html={filter.html}
+                                        labelM={filter.labelM}
+                                        name={filter.name}
+                                        value={homeInfo[`${filter.name}`]}
+                                        disabled={filter.disabled}
+                                        handleFilters={handleFilters}
+                                        objOptions={objOptions[i]}
+                                    />
+                                )
+                            })}
                         </div>
 
+                        <button onClick={handleReset}>Reset Filters</button>
             </form>
 
-            <div className={Math.ceil(recipesArray.length / 9) ? styles.pages : styles.hideDiv}>
-                {
-                        Array.from(Array(Math.ceil(recipesArray.length / 9))).map((_, i) => {
-                            return (
-                                <button name = "pageIndex" key = {i+1} value = {i*9} onClick = {handleChange}>
-                                    {i + 1}
-                                </button>
-                            )
-                        })
-                }
-            </div>
+            { Array.isArray(recipesArray) && <Pagination recipesArray={recipesArray} handleChange={handleChange}/> }
 
             <h4 className={recipesArray.length ? styles.selectedPage : styles.hideDiv}>
                 Page {(homeInfo.pageIndex / 9) + 1} of {Math.ceil(recipesArray.length / 9)}
@@ -137,7 +151,7 @@ export default function Home() {
                         <h1 className={styles.noResults}>No {homeInfo.diets} recipes found</h1>
                     :
                             recipesArray.slice(homeInfo.pageIndex, (homeInfo.pageIndex + 9)).map((m, i) => (
-                                    <Link key={i} to={`/recipe/${m.id}`} className={styles.links}>
+                                        <Link key={i} to={`/recipe/${m.id}`} className={styles.links}>
                                                     <RecipeCard 
                                                         key={i}
                                                         id={m.id}
@@ -145,13 +159,16 @@ export default function Home() {
                                                         image={m.image}
                                                         diet={m.diets}
                                                         healthScore={m.healthScore}
+                                                        handleClosing={ typeof(m.id) !== 'number' && 
+                                                                            (() => dispatch(actions.deleteRecipe(m.id)))
+                                                                      }
                                                     />
                                         </Link>
                                     )
                             )
                     ) 
                 :
-                    <h1 className={styles.noResults}>{recipesArray.message}</h1>
+                    <h1 className={styles.noResults}>{recipesArray.message} 😕</h1>
                 }
                 
             </div>
