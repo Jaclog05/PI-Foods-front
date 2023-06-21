@@ -3,13 +3,19 @@ import styles from './RecipeCard.module.css';
 import defaultNewRecipe from '../../images/defaultNewRecipe.png'
 
 
-function GameCard({name, image, diet, healthScore}) {
+function GameCard({name, image, diet, healthScore, handleClosing}) {
+
+  const handleCloseAction = (e) => {
+    e.preventDefault()
+    handleClosing()
+  }
 
   return (
     <div className={styles.wrapper}>
         <div className={styles.upper}>
             <div>{healthScore}</div>
             <h4 style={{margin: 4}}>{name}</h4>
+            {typeof id !== 'number' && <button onClick={handleCloseAction}>x</button>}
         </div>
         <img className={styles.images} loading='lazy' src={image ? image : defaultNewRecipe} alt={name} width="210" height="140"/>
         <div className={styles.genresDiv}>
