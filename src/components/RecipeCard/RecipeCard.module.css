@@ -40,7 +40,7 @@
 
 .upper {
     display: grid;
-    grid-template-columns: 1fr 9fr;
+    grid-template-columns: 1fr 9fr 1fr;
     background-color: #283739;
     border-radius: 2px 2px 0px 0px;
     color: #e0e0e0

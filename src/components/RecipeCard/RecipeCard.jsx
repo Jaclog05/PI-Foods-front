@@ -3,7 +3,7 @@ import styles from './RecipeCard.module.css';
 import defaultNewRecipe from '../../images/defaultNewRecipe.png'
 
 
-function GameCard({name, image, diet, healthScore, handleClosing}) {
+function GameCard({id, name, image, diet, healthScore, handleClosing}) {
 
   const handleCloseAction = (e) => {
     e.preventDefault()
